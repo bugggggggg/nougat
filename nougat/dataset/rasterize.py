@@ -11,6 +11,8 @@ from pathlib import Path
 from tqdm import tqdm
 import io
 from typing import Optional, List, Union
+from loguru import logger
+import os
 
 logging.getLogger("pypdfium2").setLevel(logging.WARNING)
 
@@ -21,6 +23,7 @@ def rasterize_paper(
     dpi: int = 96,
     return_pil=False,
     pages=None,
+    b_parallel: bool=True
 ) -> Optional[List[io.BytesIO]]:
     """
     Rasterize a PDF file to PNG images.
@@ -43,10 +46,15 @@ def rasterize_paper(
             pdf = pypdfium2.PdfDocument(pdf)
         if pages is None:
             pages = range(len(pdf))
+        if b_parallel:
+            n_proc = os.cpu_count()
+        else:
+            n_proc = 1
         renderer = pdf.render(
             pypdfium2.PdfBitmap.to_pil,
             page_indices=pages,
             scale=dpi / 72,
+            n_processes=n_proc  # must be 1 here to forbid multiprocessing render
         )
         for i, image in zip(pages, renderer):
             if return_pil:
@@ -56,7 +64,7 @@ def rasterize_paper(
             else:
                 image.save((outpath / ("%02d.png" % (i + 1))), "png")
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
     if return_pil:
         return pils
 

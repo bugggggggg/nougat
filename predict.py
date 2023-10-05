@@ -126,6 +126,7 @@ def main():
     args = get_args()
     model = NougatModel.from_pretrained(args.checkpoint)
     model = move_to_device(model, bf16=not args.full_precision, cuda=args.batchsize > 0)
+    model = model.to("cuda")
     if args.batchsize <= 0:
         # set batch size to 1. Need to check if there are benefits for CPU conversion for >1
         args.batchsize = 1
