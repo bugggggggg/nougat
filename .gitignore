@@ -145,3 +145,4 @@ ckpt*/
 pdfs
 
 model_small/
+predict_wyq_batch.py
