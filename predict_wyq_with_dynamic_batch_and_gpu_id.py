@@ -312,7 +312,7 @@ def run(args, datasets):
     predictions = []
     file_index = 0
     page_num = 0
-    for i, (sample, is_last_page) in enumerate(tqdm(dataloader, desc=f"gpu {args.gpu_id}: png->mmd")):
+    for i, (sample, is_last_page) in enumerate(tqdm(dataloader, desc=f"gpu {args.gpu_id}: png->mmd", mininterval=60)):
         model_output = model.inference(
             image_tensors=sample, early_stopping=args.skipping
         )
@@ -368,7 +368,7 @@ def main():
             pool.imap(_load_dataset, zip(repeat((args.out, args.recompute, args.checkpoint)), args.pdf)), 
             total=len(args.pdf),
             desc=f"gpu {args.gpu_id}: pdf->png",
-            mininterval=30
+            mininterval=60
         ):
             if dataset is None: continue
             tmp = WYQDataset(pdf, dataset, args.single_page)
