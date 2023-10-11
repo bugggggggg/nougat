@@ -289,7 +289,10 @@ def _load_dataset(params):
         dataset = ImageDatasetWYQ(rasterize_paper(pdf, b_parallel=False), prepare.do)
         return dataset, pdf
     except pypdf.errors.PdfStreamError:
-        logging.info(f"Could not load file {str(pdf)}.")
+        logger.info(f"Could not load file {str(pdf)}.")
+        return None, None
+    except pypdf.errors.PyPdfError:  # catch all errors from PYPDF
+        logger.info(f"Could not load file {str(pdf)}.")
         return None, None
 
 def run(args, datasets):
@@ -378,7 +381,7 @@ def main():
         try:
             run(args, datasets)
             break
-        except Exception as e: 
+        except torch.cuda.OutOfMemoryError as e: # OOM error
             logger.error(e)
             assert args.batchsize > 1
             args.batchsize = args.batchsize // 2
