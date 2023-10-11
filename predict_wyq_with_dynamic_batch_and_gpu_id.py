@@ -309,7 +309,7 @@ def run(args, datasets):
     predictions = []
     file_index = 0
     page_num = 0
-    for i, (sample, is_last_page) in enumerate(tqdm(dataloader, desc="png->mmd")):
+    for i, (sample, is_last_page) in enumerate(tqdm(dataloader, desc=f"gpu {args.gpu_id}: png->mmd")):
         model_output = model.inference(
             image_tensors=sample, early_stopping=args.skipping
         )
@@ -327,7 +327,7 @@ def run(args, datasets):
             elif args.skipping and model_output["repeats"][j] is not None:
                 if model_output["repeats"][j] > 0:
                     # If we end up here, it means the output is most likely not complete and was truncated.
-                    logger.warning(f"Skipping page {page_num} due to repetitions.")
+                    # logger.warning(f"Skipping page {page_num} due to repetitions.")
                     predictions.append(f"\n\n[MISSING_PAGE_FAIL:{page_num}]\n\n")
                 else:
                     # If we end up here, it means the document page is too different from the training domain.
@@ -364,7 +364,7 @@ def main():
         for dataset, pdf in tqdm(
             pool.imap(_load_dataset, zip(repeat((args.out, args.recompute, args.checkpoint)), args.pdf)), 
             total=len(args.pdf),
-            desc="pdf->png",
+            desc=f"gpu {args.gpu_id}: pdf->png",
             mininterval=30
         ):
             if dataset is None: continue
