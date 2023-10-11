@@ -25,7 +25,7 @@ def default_batch_size():
     return batch_size
 
 
-def move_to_device(model, bf16: bool = True, cuda: bool = True):
+def move_to_device(model, bf16: bool = True, cuda: bool = True, gpu_id: int = -1):
     try:
         if torch.backends.mps.is_available():
             return model.to("mps")
@@ -34,5 +34,8 @@ def move_to_device(model, bf16: bool = True, cuda: bool = True):
     if bf16:
         model = model.to(torch.bfloat16)
     if cuda and torch.cuda.is_available():
-        model = model.to("cuda")
+        if gpu_id == -1:
+            model = model.to("cuda")
+        else:
+            model = model.to(f"cuda:{gpu_id}")
     return model
